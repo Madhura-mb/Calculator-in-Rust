@@ -1,12 +1,17 @@
 use std::io;
+use std::io::Write;
+
+use calculator::{parse_expression, evaluate};
 
 fn main() {
-    loop {
+    let stdin = io::stdin();
+
+    while let Ok(_) = write_prompt() {
         let mut input = String::new();
 
-        io::stdin()
-            .read_line(&mut input)
-            .expect("Failed to read input");
+        if stdin.read_line(&mut input).is_err() {
+            break;
+        }
 
         let input = input.trim();
 
@@ -14,45 +19,22 @@ fn main() {
             break;
         }
 
-        let mut iter = input.split_whitespace();
-
-        let (a, op, b) = match (iter.next(), iter.next(), iter.next()) {
-            (Some(a), Some(op), Some(b)) => (a, op, b),
-            _ => {
-                println!("Invalid format. Use: operand operator operand");
+        let (a, op, b) = match parse_expression(input) {
+            Ok(v) => v,
+            Err(e) => {
+                eprintln!("{}", e);
                 continue;
             }
         };
 
-        let a: i32 = match a.parse() {
-            Ok(n) => n,
-            Err(_) => {
-                println!("Invalid first operand");
-                continue;
-            }
-        };
-
-        let b: i32 = match b.parse() {
-            Ok(n) => n,
-            Err(_) => {
-                println!("Invalid second operand");
-                continue;
-            }
-        };
-
-        let op: char = op.chars().next().unwrap();
-
-        let result = match op {
-            '+' => a + b,
-            '-' => a - b,
-            '*' => a * b,
-            '/' => a / b,
-            _ => {
-                println!("Unsupported operator");
-                continue;
-            }
-        };
-
-        println!("> {}", result);
+        match evaluate(a, op, b) {
+            Ok(result) => println!("  {}", result),
+            Err(e) => eprintln!("{}", e),
+        }
     }
+}
+
+fn write_prompt() -> io::Result<()> {
+    print!("> ");
+    io::stdout().flush()
 }
