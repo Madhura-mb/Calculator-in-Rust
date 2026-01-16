@@ -54,3 +54,70 @@ pub fn evaluate(a: i32, op: char, b: i32) -> Result<i32, String> {
         _ => Err("Unsupported operator".to_string()),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // -------- tokenize tests --------
+    #[test]
+    fn test_tokenize_simple_expression() {
+        let input = "2+3";
+        let tokens = tokenize(input).unwrap();
+        assert_eq!(tokens, vec!["2", "+", "3"]);
+    }
+
+    #[test]
+    fn test_tokenize_with_spaces() {
+        let input = "10 * 5";
+        let tokens = tokenize(input).unwrap();
+        assert_eq!(tokens, vec!["10", "*", "5"]);
+    }
+
+    #[test]
+    fn test_tokenize_invalid_input() {
+        let input = "abc";
+        let result = tokenize(input);
+        assert!(result.is_err());
+    }
+
+    // -------- parse_expression tests --------
+    #[test]
+    fn test_parse_expression_valid() {
+        let input = "8-3";
+        let result = parse_expression(input).unwrap();
+        assert_eq!(result, (8, '-', 3));
+    }
+
+    #[test]
+    fn test_parse_expression_invalid_format() {
+        let input = "1+2+3";
+        let result = parse_expression(input);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_parse_expression_invalid_operand() {
+        let input = "a+2";
+        let result = parse_expression(input);
+        assert!(result.is_err());
+    }
+
+    // -------- evaluate tests --------
+    #[test]
+    fn test_evaluate_addition() {
+        assert_eq!(evaluate(2, '+', 3).unwrap(), 5);
+    }
+
+    #[test]
+    fn test_evaluate_division_by_zero() {
+        let result = evaluate(10, '/', 0);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_evaluate_invalid_operator() {
+        let result = evaluate(1, '%', 2);
+        assert!(result.is_err());
+    }
+}
