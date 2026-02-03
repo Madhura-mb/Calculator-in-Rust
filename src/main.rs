@@ -1,12 +1,12 @@
 use std::io;
 use std::io::Write;
 
-use calculator::{parse_expression, evaluate};
+use calculator::{evaluate, parse_expression};
 
 fn main() {
     let stdin = io::stdin();
 
-    while let Ok(_) = write_prompt() {
+    while write_prompt().is_ok() {
         let mut input = String::new();
 
         if stdin.read_line(&mut input).is_err() {
@@ -33,6 +33,7 @@ fn main() {
         }
     }
 }
+
 
 fn write_prompt() -> io::Result<()> {
     print!("> ");
