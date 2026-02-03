@@ -1,10 +1,24 @@
 use regex::Regex;
+<<<<<<< HEAD
 
 pub fn tokenize(input: &str) -> Result<Vec<String>, String> {
     let re = Regex::new(r"\d+|[+\-*/()]")
         .map_err(|_| "Failed to compile regex".to_string())?;
 
     let tokens: Vec<String> = re
+=======
+use once_cell::sync::Lazy;
+use std::collections::VecDeque;
+
+static TOKEN_REGEX: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r"\d+|[+\-*/()]").expect("Invalid regex")
+});
+
+/* ---------------- TOKENIZATION ---------------- */
+
+pub fn tokenize(input: &str) -> Result<Vec<String>, String> {
+    let tokens: Vec<String> = TOKEN_REGEX
+>>>>>>> cd56106 (Compile regex once using Lazy static)
         .find_iter(input)
         .map(|m| m.as_str().to_string())
         .collect();
