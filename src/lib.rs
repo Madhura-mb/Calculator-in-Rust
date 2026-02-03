@@ -2,7 +2,7 @@ use regex::Regex;
 use once_cell::sync::Lazy;
 
 static TOKEN_REGEX: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r"\d+|[+\-*/()]").expect("Invalid regex")
+    Regex::new(r"\d+|[+\-*%/()]").expect("Invalid regex")
 });
 
 /* ---------------- TOKENIZATION ---------------- */
@@ -53,6 +53,13 @@ pub fn evaluate(a: i32, op: char, b: i32) -> Result<i32, String> {
                 Err("Cannot divide by zero".to_string())
             } else {
                 Ok(a / b)
+            }
+        }
+        '%' => {
+            if b == 0 {
+                Err("Cannot modulo by zero".to_string())
+            } else {
+                Ok(a % b)
             }
         }
         _ => Err("Unsupported operator".to_string()),
