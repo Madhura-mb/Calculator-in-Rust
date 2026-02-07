@@ -127,8 +127,7 @@ mod tests {
     }
 
     #[test]
-    fn test_evaluate_invalid_operator() {
-        let result = evaluate(1, '%', 2);
-        assert!(result.is_err());
+    fn test_evaluate_modulo() {
+        assert_eq!(evaluate(4, '%', 3).unwrap(), 1);
     }
 }
