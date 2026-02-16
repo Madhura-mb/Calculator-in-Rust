@@ -1,14 +1,18 @@
 use regex::Regex;
-use once_cell::sync::Lazy;
+use std::sync::OnceLock;
 
-static TOKEN_REGEX: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r"\d+|[+\-*%/()]").expect("Invalid regex")
-});
+static TOKEN_REGEX: OnceLock<Regex> = OnceLock::new();
+
+fn token_regex() -> &'static Regex {
+    TOKEN_REGEX.get_or_init(|| {
+        Regex::new(r"\d+|[+\-*%/()]").expect("Invalid regex")
+    })
+}
 
 /* ---------------- TOKENIZATION ---------------- */
 
 pub fn tokenize(input: &str) -> Result<Vec<String>, String> {
-    let tokens: Vec<String> = TOKEN_REGEX
+    let tokens: Vec<String> = token_regex()
         .find_iter(input)
         .map(|m| m.as_str().to_string())
         .collect();
@@ -131,3 +135,5 @@ mod tests {
         assert_eq!(evaluate(4, '%', 3).unwrap(), 1);
     }
 }
+
+
