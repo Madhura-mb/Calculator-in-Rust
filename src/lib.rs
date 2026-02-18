@@ -1,12 +1,7 @@
 use regex::Regex;
-use std::sync::OnceLock;
 
-static TOKEN_REGEX: OnceLock<Regex> = OnceLock::new();
-
-fn token_regex() -> &'static Regex {
-    TOKEN_REGEX.get_or_init(|| {
+fn token_regex() -> Regex {
         Regex::new(r"\d+|[+\-*%/()]").expect("Invalid regex")
-    })
 }
 
 /* ---------------- TOKENIZATION ---------------- */
