@@ -4,12 +4,8 @@ use std::sync::OnceLock;
 static TOKEN_REGEX: OnceLock<Regex> = OnceLock::new();
 
 fn token_regex() -> &'static Regex {
-    TOKEN_REGEX.get_or_init(|| {
-        Regex::new(r"\d+|[+\-*%/()]").expect("Invalid regex")
-    })
+    TOKEN_REGEX.get_or_init(|| Regex::new(r"\d+|[+\-*%/()]").expect("Invalid regex"))
 }
-
-/* ---------------- TOKENIZATION ---------------- */
 
 pub fn tokenize(input: &str) -> Result<Vec<String>, String> {
     let tokens: Vec<String> = token_regex()
@@ -135,5 +131,3 @@ mod tests {
         assert_eq!(evaluate(4, '%', 3).unwrap(), 1);
     }
 }
-
-

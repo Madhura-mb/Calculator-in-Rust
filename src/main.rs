@@ -34,7 +34,6 @@ fn main() {
     }
 }
 
-
 fn write_prompt() -> io::Result<()> {
     print!("> ");
     io::stdout().flush()

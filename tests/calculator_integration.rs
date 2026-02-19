@@ -1,4 +1,4 @@
-use calculator::{parse_expression, evaluate};
+use calculator::{evaluate, parse_expression};
 
 #[test]
 fn test_full_expression_flow() {
