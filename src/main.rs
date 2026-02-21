@@ -6,7 +6,7 @@ use calculator::evaluate_expression;
 fn main() {
     let stdin = io::stdin();
 
-    while let Ok(_) = write_prompt() {
+    while write_prompt().is_ok() {
         let mut input = String::new();
 
         if stdin.read_line(&mut input).is_err() {
