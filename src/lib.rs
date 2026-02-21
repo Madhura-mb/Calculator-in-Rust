@@ -1,13 +1,17 @@
 use regex::Regex;
+use std::sync::OnceLock;
 use std::collections::VecDeque;
+
+static TOKEN_REGEX: OnceLock<Regex> = OnceLock::new();
+
+fn token_regex() -> &'static Regex {
+    TOKEN_REGEX.get_or_init(|| Regex::new(r"\d+|[+\-*%/()]").expect("Invalid regex"))
+}
 
 /* ---------------- TOKENIZATION ---------------- */
 
 pub fn tokenize(input: &str) -> Result<Vec<String>, String> {
-    let re = Regex::new(r"\d+|[+\-*/()]")
-        .map_err(|_| "Regex compile error".to_string())?;
-
-    let tokens: Vec<String> = re
+    let tokens: Vec<String> = token_regex()
         .find_iter(input)
         .map(|m| m.as_str().to_string())
         .collect();
@@ -40,8 +44,9 @@ fn to_rpn(tokens: Vec<String>) -> Result<Vec<String>, String> {
     let mut operators: VecDeque<String> = VecDeque::new();
 
     for token in tokens {
-        if token.chars().all(|c| c.is_digit(10)) {
+        if token.chars().all(|c| c.is_ascii_digit()) {
             output.push(token);
+
         } else if is_operator(&token) {
             while let Some(top) = operators.back() {
                 if is_operator(top) && precedence(top) >= precedence(&token) {
@@ -51,15 +56,25 @@ fn to_rpn(tokens: Vec<String>) -> Result<Vec<String>, String> {
                 }
             }
             operators.push_back(token);
+
         } else if token == "(" {
             operators.push_back(token);
+
         } else if token == ")" {
+            let mut found_open = false;
+
             while let Some(top) = operators.pop_back() {
                 if top == "(" {
+                    found_open = true;
                     break;
                 }
                 output.push(top);
             }
+
+            if !found_open {
+                return Err("Mismatched parentheses: no matching '('".to_string());
+            }
+
         } else {
             return Err(format!("Invalid token: {}", token));
         }
@@ -178,5 +193,12 @@ mod tests {
         assert!(evaluate_expression("2++3").is_err());
         assert!(evaluate_expression("(2+3").is_err());
         assert!(evaluate_expression(")").is_err());
+
+        //invalid cases for mis-matched parentheses
+        assert!(evaluate_expression("(1+2").is_err());
+        assert!(evaluate_expression("1+2)").is_err());
+        assert!(evaluate_expression("((1+2)").is_err());
+        assert!(evaluate_expression("(1+2))").is_err());
+
     }
 }
