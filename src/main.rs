@@ -1,7 +1,7 @@
 use std::io;
 use std::io::Write;
 
-use calculator::{evaluate, parse_expression};
+use calculator::evaluate_expression;
 
 fn main() {
     let stdin = io::stdin();
@@ -19,15 +19,7 @@ fn main() {
             break;
         }
 
-        let (a, op, b) = match parse_expression(input) {
-            Ok(v) => v,
-            Err(e) => {
-                eprintln!("{}", e);
-                continue;
-            }
-        };
-
-        match evaluate(a, op, b) {
+        match evaluate_expression(input) {
             Ok(result) => println!("  {}", result),
             Err(e) => eprintln!("{}", e),
         }
