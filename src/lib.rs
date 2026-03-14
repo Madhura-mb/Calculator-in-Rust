@@ -96,21 +96,24 @@ fn evaluate_rpn(tokens: Vec<String>) -> Result<i32, String> {
     let mut stack: Vec<i32> = Vec::new();
 
     for token in tokens {
-        if let Ok(num) = token.parse::<i32>() {
-            stack.push(num);
+        if let Ok(num) = token.parse::<i64>() {
+            if num < i32::MIN as i64 || num > i32::MAX as i64{
+                return Err("Input number exceeds supported integer range".to_string());
+            }
+            stack.push(num as i32);
         } else if is_operator(&token) {
             let b = stack.pop().ok_or("Invalid expression")?;
             let a = stack.pop().ok_or("Invalid expression")?;
 
             let result = match token.as_str() {
-                "+" => a + b,
-                "-" => a - b,
-                "*" => a * b,
+                "+" => a.checked_add(b).ok_or("Integer Overflow")?,
+                "-" => a.checked_sub(b).ok_or("Integer Overflow")?,
+                "*" => a.checked_mul(b).ok_or("Integer Overflow")?,
                 "/" => {
                     if b == 0 {
                         return Err("Division by zero".to_string());
                     }
-                    a / b
+                    a.checked_div(b).ok_or("Integer Overflow")?   // check the case
                 }
                 _ => return Err("Unknown operator".to_string()),
             };
@@ -200,5 +203,11 @@ mod tests {
         assert!(evaluate_expression("((1+2)").is_err());
         assert!(evaluate_expression("(1+2))").is_err());
 
+    }
+
+    #[test]
+    fn test_integer_overflow() {
+        assert!(evaluate_expression("500000000000 + 40000000000").is_err());
+        assert!(evaluate_expression("100000 * 100000").is_err());
     }
 }
