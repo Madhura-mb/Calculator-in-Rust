@@ -28,13 +28,13 @@ pub fn tokenize(input: &str) -> Result<Vec<String>, String> {
 fn precedence(op: &str) -> i32 {
     match op {
         "+" | "-" => 1,
-        "*" | "/" => 2,
+        "*" | "/" | "%" => 2,
         _ => 0,
     }
 }
 
 fn is_operator(token: &str) -> bool {
-    matches!(token, "+" | "-" | "*" | "/")
+    matches!(token, "+" | "-" | "*" | "/" | "%")
 }
 
 /* ---------------- SHUNTING YARD (INFIX → RPN) ---------------- */
@@ -111,8 +111,16 @@ fn evaluate_rpn(tokens: Vec<String>) -> Result<i32, String> {
                         }
                         a.checked_div(b).ok_or("Integer Overflow")?
                     }
-                    _ => return Err("Unknown operator".to_string()),
-                };
+                    a.checked_div(b).ok_or("Integer Overflow")?   
+                }
+                "%" => {
+                    if b == 0 {
+                        return Err("Modulo by zero".to_string());
+                    }
+                    a.checked_rem(b).ok_or("Integer Overflow")?  
+                }
+                _ => return Err("Unknown operator".to_string()),
+            };
 
                 stack.push(result);
             }
@@ -193,6 +201,11 @@ mod tests {
     #[test]
     fn test_division_by_zero() {
         assert!(evaluate_expression("10/0").is_err());
+    }
+
+    #[test]
+    fn test_modulo_by_zero() {
+        assert!(evaluate_expression("10%0").is_err());
     }
 
     #[test]
