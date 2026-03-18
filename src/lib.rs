@@ -97,7 +97,7 @@ fn evaluate_rpn(tokens: Vec<String>) -> Result<i32, String> {
 
     for token in tokens {
         match token.as_str() {
-            "+" | "-" | "*" | "/" => {
+            "+" | "-" | "*" | "/" | "%" => {
                 let b = stack.pop().ok_or("Invalid expression")?;
                 let a = stack.pop().ok_or("Invalid expression")?;
 
@@ -110,17 +110,15 @@ fn evaluate_rpn(tokens: Vec<String>) -> Result<i32, String> {
                             return Err("Division by zero".to_string());
                         }
                         a.checked_div(b).ok_or("Integer Overflow")?
+                    }   
+                    "%" => {
+                        if b == 0 {
+                            return Err("Modulo by zero".to_string());
+                        }
+                        a.checked_rem(b).ok_or("Integer Overflow")?  
                     }
-                    a.checked_div(b).ok_or("Integer Overflow")?   
-                }
-                "%" => {
-                    if b == 0 {
-                        return Err("Modulo by zero".to_string());
-                    }
-                    a.checked_rem(b).ok_or("Integer Overflow")?  
-                }
-                _ => return Err("Unknown operator".to_string()),
-            };
+                    _ => return Err("Unknown operator".to_string()),
+                };
 
                 stack.push(result);
             }
