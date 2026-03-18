@@ -96,26 +96,33 @@ fn evaluate_rpn(tokens: Vec<String>) -> Result<i32, String> {
     let mut stack: Vec<i32> = Vec::new();
 
     for token in tokens {
-        if let Ok(num) = token.parse::<i32>() {
-            stack.push(num);
-        } else if is_operator(&token) {
-            let b = stack.pop().ok_or("Invalid expression")?;
-            let a = stack.pop().ok_or("Invalid expression")?;
+        match token.as_str() {
+            "+" | "-" | "*" | "/" => {
+                let b = stack.pop().ok_or("Invalid expression")?;
+                let a = stack.pop().ok_or("Invalid expression")?;
 
-            let result = match token.as_str() {
-                "+" => a + b,
-                "-" => a - b,
-                "*" => a * b,
-                "/" => {
-                    if b == 0 {
-                        return Err("Division by zero".to_string());
+                let result = match token.as_str() {
+                    "+" => a.checked_add(b).ok_or("Integer Overflow")?,
+                    "-" => a.checked_sub(b).ok_or("Integer Overflow")?,
+                    "*" => a.checked_mul(b).ok_or("Integer Overflow")?,
+                    "/" => {
+                        if b == 0 {
+                            return Err("Division by zero".to_string());
+                        }
+                        a.checked_div(b).ok_or("Integer Overflow")?
                     }
-                    a / b
-                }
-                _ => return Err("Unknown operator".to_string()),
-            };
+                    _ => return Err("Unknown operator".to_string()),
+                };
 
-            stack.push(result);
+                stack.push(result);
+            }
+
+            _ => {
+                let num = token
+                    .parse::<i32>()
+                    .map_err(|_| format!("Invalid or out-of-range number: {}", token))?;
+                stack.push(num);
+            }
         }
     }
 
@@ -200,5 +207,11 @@ mod tests {
         assert!(evaluate_expression("((1+2)").is_err());
         assert!(evaluate_expression("(1+2))").is_err());
 
+    }
+
+    #[test]
+    fn test_integer_overflow() {
+        assert!(evaluate_expression("500000000000 + 40000000000").is_err());
+        assert!(evaluate_expression("100000 * 100000").is_err());
     }
 }
