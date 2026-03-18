@@ -96,29 +96,33 @@ fn evaluate_rpn(tokens: Vec<String>) -> Result<i32, String> {
     let mut stack: Vec<i32> = Vec::new();
 
     for token in tokens {
-        if let Ok(num) = token.parse::<i64>() {
-            if num < i32::MIN as i64 || num > i32::MAX as i64{
-                return Err("Input number exceeds supported integer range".to_string());
-            }
-            stack.push(num as i32);
-        } else if is_operator(&token) {
-            let b = stack.pop().ok_or("Invalid expression")?;
-            let a = stack.pop().ok_or("Invalid expression")?;
+        match token.as_str() {
+            "+" | "-" | "*" | "/" => {
+                let b = stack.pop().ok_or("Invalid expression")?;
+                let a = stack.pop().ok_or("Invalid expression")?;
 
-            let result = match token.as_str() {
-                "+" => a.checked_add(b).ok_or("Integer Overflow")?,
-                "-" => a.checked_sub(b).ok_or("Integer Overflow")?,
-                "*" => a.checked_mul(b).ok_or("Integer Overflow")?,
-                "/" => {
-                    if b == 0 {
-                        return Err("Division by zero".to_string());
+                let result = match token.as_str() {
+                    "+" => a.checked_add(b).ok_or("Integer Overflow")?,
+                    "-" => a.checked_sub(b).ok_or("Integer Overflow")?,
+                    "*" => a.checked_mul(b).ok_or("Integer Overflow")?,
+                    "/" => {
+                        if b == 0 {
+                            return Err("Division by zero".to_string());
+                        }
+                        a.checked_div(b).ok_or("Integer Overflow")?
                     }
-                    a.checked_div(b).ok_or("Integer Overflow")?   // check the case
-                }
-                _ => return Err("Unknown operator".to_string()),
-            };
+                    _ => return Err("Unknown operator".to_string()),
+                };
 
-            stack.push(result);
+                stack.push(result);
+            }
+
+            _ => {
+                let num = token
+                    .parse::<i32>()
+                    .map_err(|_| format!("Invalid or out-of-range number: {}", token))?;
+                stack.push(num);
+            }
         }
     }
 
