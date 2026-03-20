@@ -23,6 +23,39 @@ pub fn tokenize(input: &str) -> Result<Vec<String>, String> {
     }
 }
 
+/* ---------------- UNARY MINUS HANDLER ---------------- */
+
+fn handle_unary_minus(tokens: Vec<String>) -> Vec<String> {
+    let mut result = Vec::new();
+    let mut i = 0;
+
+    while i < tokens.len() {
+        let token = &tokens[i];
+
+        if token == "-" {
+            let is_unary = i == 0
+                || matches!(
+                    result.last().map(|s: &String| s.as_str()),
+                    Some("+") | Some("-") | Some("*") | Some("/") | Some("%") | Some("(")
+                );
+
+            if is_unary {
+                if i + 1 < tokens.len() {
+                    let next = &tokens[i + 1];
+                    result.push(format!("-{}", next));
+                    i += 2;
+                    continue;
+                }
+            }
+        }
+
+        result.push(token.clone());
+        i += 1;
+    }
+
+    result
+}
+
 /* ---------------- OPERATOR HELPERS ---------------- */
 
 fn precedence(op: &str) -> i32 {
@@ -40,11 +73,13 @@ fn is_operator(token: &str) -> bool {
 /* ---------------- SHUNTING YARD (INFIX → RPN) ---------------- */
 
 fn to_rpn(tokens: Vec<String>) -> Result<Vec<String>, String> {
+    let tokens = handle_unary_minus(tokens);
+
     let mut output = Vec::new();
     let mut operators: VecDeque<String> = VecDeque::new();
 
     for token in tokens {
-        if token.chars().all(|c| c.is_ascii_digit()) {
+        if token.parse::<i32>().is_ok() {
             output.push(token);
 
         } else if is_operator(&token) {
@@ -224,5 +259,11 @@ mod tests {
     fn test_integer_overflow() {
         assert!(evaluate_expression("500000000000 + 40000000000").is_err());
         assert!(evaluate_expression("100000 * 100000").is_err());
+    }
+
+    fn test_unary_minus_operator() {
+        assert_eq!(evaluate_expression("-21 / -3").unwrap(), 7);
+        assert_eq!(evaluate_expression("5 * -4").unwrap(), -20);
+        assert_eq!(evaluate_expression("-8 + 2").unwrap(), 6);
     }
 }
