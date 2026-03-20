@@ -264,6 +264,6 @@ mod tests {
     fn test_unary_minus_operator() {
         assert_eq!(evaluate_expression("-21 / -3").unwrap(), 7);
         assert_eq!(evaluate_expression("5 * -4").unwrap(), -20);
-        assert_eq!(evaluate_expression("-8 + 2").unwrap(), 6);
+        assert_eq!(evaluate_expression("-8 + 2").unwrap(), -6);
     }
 }
