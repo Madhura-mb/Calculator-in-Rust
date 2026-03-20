@@ -260,6 +260,7 @@ mod tests {
         assert!(evaluate_expression("100000 * 100000").is_err());
     }
 
+    #[test]
     fn test_unary_minus_operator() {
         assert_eq!(evaluate_expression("-21 / -3").unwrap(), 7);
         assert_eq!(evaluate_expression("5 * -4").unwrap(), -20);
