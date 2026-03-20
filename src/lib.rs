@@ -39,14 +39,13 @@ fn handle_unary_minus(tokens: Vec<String>) -> Vec<String> {
                     Some("+") | Some("-") | Some("*") | Some("/") | Some("%") | Some("(")
                 );
 
-            if is_unary {
-                if i + 1 < tokens.len() {
-                    let next = &tokens[i + 1];
-                    result.push(format!("-{}", next));
-                    i += 2;
-                    continue;
-                }
+            if is_unary && i + 1 < tokens.len() {
+                let next = &tokens[i + 1];
+                result.push(format!("-{}", next));
+                i += 2;
+                continue;
             }
+            
         }
 
         result.push(token.clone());
